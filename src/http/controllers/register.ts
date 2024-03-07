@@ -1,7 +1,6 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
-import { hash } from 'bcryptjs'
-import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { registerUseCase } from '@/use-cases/register'
 
 
 export async function register(request: FastifyRequest, reply: FastifyReply) {
@@ -12,27 +11,16 @@ export async function register(request: FastifyRequest, reply: FastifyReply) {
   })
 
   const { name, email, password } = registerBodySchema.parse(request.body)
-  //hash vai gerar dado impossivel reverter, salt eu escolhi 6, a cada round ele gera um hash e fica mais dificil
-  const password_hash = await hash(password, 6)
-//find unique só busca registro unicos ou chave primaria
-  const userWithSameEmail = await prisma.user.findUnique({
-    where: {
-      email,
-    },
-  })
-
-  if (userWithSameEmail) {
-    //409 status conflito
-    return reply.status(409).send()
-  }
-
-  await prisma.user.create({
-    data: {
+  try {
+    await registerUseCase({
       name,
       email,
-      password_hash,
-    },
-  })
+      password,
+    })
+  } catch (err) {
+
+    return reply.status(409).send({})
+  }
 
   return reply.status(201).send()
 }
