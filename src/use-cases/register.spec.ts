@@ -49,8 +49,8 @@ describe('Register Use Case', () => {
       email,
       password: '123456',
     })
-//promisse ou ele resolve ou rejeita
-    expect(() =>
+//promisse ou ele resolve ou rejeita, sempre colocar await par apromise
+    await expect(() =>
       registerUseCase.execute({
         name: 'John Doe',
         email,
